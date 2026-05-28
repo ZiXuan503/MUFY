@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyBuddy Match</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ── RESET & BASE ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #F5F5F0;
+    min-height: 100vh;
+    color: #1a1a1a;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── COLOURS ── */
+  :root {
+    --mint: #C8F5E4; --mint-d: #1A9E75;
+    --peach: #FFE5D9; --peach-d: #D85A30;
+    --lav: #EEEDFE;  --lav-d: #534AB7;
+    --yel: #FAEEDA;  --yel-d: #BA7517;
+    --sky: #E6F1FB;  --sky-d: #185FA5;
+    --bg: #F5F5F0;
+    --card: #ffffff;
+    --border: #e8e8e0;
+    --muted: #888888;
+    --subtle: #f7f7f2;
+  }
+
+  /* ── LAYOUT ── */
+  #app { max-width: 520px; margin: 0 auto; position: relative; }
+  .page { padding: 24px 18px 100px; display: none; }
+  .page.active { display: block; }
+
+  /* ── BOTTOM NAV ── */
+  #bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 520px;
+    background: #fff; border-top: 1px solid var(--border);
+    display: flex; z-index: 200;
+  }
+  .nav-btn {
+    flex: 1; padding: 10px 0 8px; background: none; border: none;
+    cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; gap: 2px; position: relative;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .nav-btn span.icon { font-size: 18px; }
+  .nav-btn span.label { font-size: 10px; font-weight: 400; color: #999; }
+  .nav-btn.active span.label { font-weight: 800; color: var(--mint-d); }
+  .nav-btn .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--mint-d); margin-top: 1px; display: none; }
+  .nav-btn.active .dot { display: block; }
+  .nav-badge {
+    position: absolute; top: 6px; right: 50%; transform: translateX(14px);
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--mint-d); color: #fff;
+    font-size: 10px; font-weight: 800;
+    display: none; align-items: center; justify-content: center;
+  }
+  .nav-badge.visible { display: flex; }
+
+  /* ── HEADINGS ── */
+  .page-title { font-size: 26px; font-weight: 900; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px; margin-bottom: 12px;
+  }
+
+  /* ── SUBJECT PILL ── */
+  .pill {
+    display: inline-block; font-size: 13px; font-weight: 700;
+    border-radius: 8px; padding: 5px 13px;
+  }
+
+  /* ── SWIPE SECTION ── */
+  #swipe-stack {
+    position: relative; height: 390px; margin-bottom: 22px;
+    user-select: none;
+  }
+  .swipe-card {
+    position: absolute; top: 0; left: 0; right: 0;
+    background: #fff; border-radius: 24px;
+    border: 1px solid var(--border);
+    padding: 24px 22px 20px;
+    cursor: grab;
+    box-shadow: 0 6px 28px rgba(0,0,0,0.09);
+    transition: transform 0.35s ease, opacity 0.3s;
+    z-index: 10;
+  }
+  .swipe-card.behind-1 { transform: scale(0.965); top: 6px; left: 3px; right: 3px; z-index: 9; pointer-events: none; }
+  .swipe-card.behind-2 { transform: scale(0.93); top: 12px; left: 6px; right: 6px; z-index: 8; pointer-events: none; }
+  .swipe-label {
+    position: absolute; top: 18px;
+    font-weight: 800; font-size: 13px;
+    border-radius: 8px; padding: 4px 12px;
+    opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  }
+  .swipe-label.connect { left: 18px; background: var(--mint); color: var(--mint-d); border: 1.5px solid var(--mint-d); transform: rotate(-10deg); }
+  .swipe-label.skip { right: 18px; background: var(--peach); color: var(--peach-d); border: 1.5px solid var(--peach-d); transform: rotate(10deg); }
+  .swipe-label.show { opacity: 1; }
+
+  /* swipe card internals */
+  .sc-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; flex-shrink: 0; }
+  .avatar-sm { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; flex-shrink: 0; }
+  .avatar-xs { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+  .sc-name { font-size: 19px; font-weight: 800; margin-bottom: 2px; }
+  .sc-meta { font-size: 13px; color: var(--muted); }
+  .sc-tags { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tag { font-size: 12px; background: var(--subtle); border-radius: 8px; padding: 4px 11px; color: #666; }
+  .sc-goal { background: #f9f9f6; border-radius: 12px; padding: 12px 14px; }
+  .sc-goal-label { font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .sc-goal-text { font-size: 14px; color: #333; line-height: 1.6; }
+
+  /* swipe buttons */
+  .swipe-btns { display: flex; justify-content: center; align-items: center; gap: 22px; margin-bottom: 10px; }
+  .btn-skip { width: 56px; height: 56px; border-radius: 50%; background: var(--peach); border: 2px solid var(--peach-d); font-size: 22px; cursor: pointer; }
+  .btn-like { width: 68px; height: 68px; border-radius: 50%; background: var(--mint); border: 2px solid var(--mint-d); font-size: 28px; cursor: pointer; }
+  .swipe-hint { text-align: center; font-size: 12px; color: #bbb; }
+
+  /* ── MATCHES / CHAT LIST ── */
+  .match-row {
+    display: flex; gap: 12px; align-items: center;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .match-row:hover { background: #fafaf8; border-radius: 16px; }
+
+  /* ── GROUPS ── */
+  .avatar-stack { display: flex; }
+  .avatar-stack .avatar-xs { border: 2px solid #fff; margin-left: -9px; }
+  .avatar-stack .avatar-xs:first-child { margin-left: 0; }
+
+  /* ── REGISTER FORM ── */
+  .form-label {
+    font-size: 12px; font-weight: 700; color: #888;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    display: block; margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%; font-size: 14px; padding: 10px 13px;
+    border-radius: 10px; border: 1.5px solid #e0e0d8;
+    background: #fff; color: #1a1a1a;
+    font-family: 'DM Sans', sans-serif;
+    margin-bottom: 14px; display: block;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-input:focus { border-color: var(--mint-d); box-shadow: 0 0 0 3px rgba(26,158,117,0.1); outline: none; }
+  .toggle-btn {
+    font-size: 13px; padding: 7px 13px; border-radius: 10px;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    border: 1.5px solid #e0e0d8; background: #fff; color: #999;
+    transition: all 0.15s;
+  }
+  .toggle-btn.active-mint { border: 2px solid var(--mint-d); background: var(--mint); color: var(--mint-d); font-weight: 700; }
+  .toggle-btn.active-lav  { border: 2px solid var(--lav-d);  background: var(--lav);  color: var(--lav-d);  font-weight: 700; }
+  .btn-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+  .submit-btn {
+    width: 100%; padding: 15px; border-radius: 14px;
+    background: var(--mint-d); color: #fff; border: none;
+    font-size: 15px; font-weight: 800; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: opacity 0.2s;
+  }
+  .submit-btn:disabled { background: #e8e8e0; color: #aaa; cursor: default; }
+  .success-banner {
+    background: var(--mint); color: var(--mint-d);
+    border-radius: 12px; padding: 12px 16px;
+    font-weight: 700; font-size: 14px; margin-bottom: 18px;
+    display: none;
+  }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+
+  /* ── CHAT VIEW ── */
+  #chat-view {
+    display: none; flex-direction: column;
+    height: 100vh; max-width: 520px; margin: 0 auto;
+    background: var(--bg); position: fixed;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; z-index: 300;
+  }
+  #chat-view.open { display: flex; }
+  .chat-header {
+    background: #fff; border-bottom: 1px solid var(--border);
+    padding: 14px 18px; display: flex; align-items: center;
+    gap: 12px; flex-shrink: 0;
+  }
+  .chat-back { background: none; border: none; font-size: 22px; cursor: pointer; color: #555; padding: 0 4px; }
+  .chat-name { font-weight: 800; font-size: 15px; }
+  .chat-status { font-size: 12px; font-weight: 600; }
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    padding-bottom: 80px;
+  }
+  .msg-row { display: flex; }
+  .msg-row.user { justify-content: flex-end; }
+  .msg-row.bot  { justify-content: flex-start; align-items: flex-end; gap: 8px; }
+  .msg-bubble {
+    max-width: 75%; padding: 10px 14px; font-size: 14px; line-height: 1.5;
+    animation: fadeUp 0.2s ease;
+  }
+  .msg-bubble.user { background: var(--mint-d); color: #fff; border-radius: 18px 18px 4px 18px; }
+  .msg-bubble.bot  { background: #fff; color: #1a1a1a; border: 1px solid var(--border); border-radius: 18px 18px 18px 4px; }
+  .msg-bubble.tutor-bot { background: #fff; color: #1a1a1a; border: 1px solid var(--border); border-radius: 18px 18px 18px 4px; white-space: pre-wrap; }
+  .msg-bubble.tutor-user { background: var(--lav-d); color: #fff; border-radius: 18px 18px 4px 18px; }
+  .tutor-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--lav); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .typing-indicator { display: flex; gap: 5px; align-items: center; padding: 12px 16px; background: #fff; border: 1px solid var(--border); border-radius: 18px 18px 18px 4px; width: fit-content; }
+  .typing-dot { width: 7px; height: 7px; border-radius: 50%; animation: blink 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink { 0%,80%,100% { opacity:0.2; } 40% { opacity:1; } }
+  .chat-input-bar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 520px;
+    background: #fff; border-top: 1px solid var(--border);
+    padding: 10px 16px; display: flex; gap: 10px; align-items: center;
+    z-index: 10;
+  }
+  .chat-input {
+    flex: 1; padding: 10px 14px; border-radius: 22px;
+    border: 1.5px solid #e0e0d8; font-size: 14px;
+    background: #f9f9f6; font-family: 'DM Sans', sans-serif;
+    outline: none; transition: border-color 0.2s;
+  }
+  .chat-input:focus { border-color: var(--mint-d); }
+  .send-btn {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: var(--mint-d); color: #fff; border: none;
+    font-size: 18px; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; transition: background 0.2s;
+  }
+  .send-btn:disabled { background: #e8e8e0; color: #aaa; cursor: default; }
+  .send-btn.tutor { background: var(--lav-d); }
+  .send-btn.tutor:disabled { background: #e8e8e0; }
+
+  /* ── CHAT HUB ── */
+  .tutor-card {
+    border-radius: 18px; padding: 20px; margin-bottom: 20px;
+    cursor: pointer; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #534AB7, #7F77DD);
+    transition: opacity 0.15s;
+  }
+  .tutor-card:hover { opacity: 0.92; }
+  .tutor-bg-icon { position: absolute; right: -10px; top: -10px; font-size: 64px; opacity: 0.15; pointer-events: none; }
+  .tutor-label { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+  .tutor-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .tutor-desc  { font-size: 13px; color: rgba(255,255,255,0.8); }
+  .tutor-cta   { margin-top: 14px; display: inline-block; background: rgba(255,255,255,0.2); color: #fff; font-size: 12px; font-weight: 700; border-radius: 8px; padding: 5px 14px; }
+  .section-label { font-size: 13px; font-weight: 700; color: #888; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px; }
+  .online-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--mint-d); border: 2px solid #fff; position: absolute; bottom: 0; right: 0; }
+
+  /* ── PROMPT CHIPS ── */
+  .prompt-chips { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; margin-top: 8px; }
+  .prompt-chip {
+    font-size: 12px; padding: 7px 12px; border-radius: 20px;
+    border: 1.5px solid var(--lav-d); background: var(--lav);
+    color: var(--lav-d); cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+  }
+
+  /* ── EMPTY STATES ── */
+  .empty { text-align: center; padding: 60px 20px; color: #999; }
+  .empty .emoji { font-size: 52px; margin-bottom: 12px; }
+  .empty .title { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 8px; }
+
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ DISCOVER ══ -->
+  <div id="page-discover" class="page active">
+    <div class="page-title">StudyBuddy</div>
+    <div class="page-sub">Swipe to connect with study partners 📖</div>
+
+    <div id="swipe-stack">
+      <!-- cards injected by JS -->
+    </div>
+    <div id="swipe-empty" class="empty" style="display:none">
+      <div class="emoji">🎉</div>
+      <div class="title">You've seen everyone!</div>
+      <p>Check your matches and start chatting!</p>
+    </div>
+
+    <div id="swipe-controls">
+      <div class="swipe-btns">
+        <button class="btn-skip" id="btn-skip">✕</button>
+        <button class="btn-like" id="btn-like">✓</button>
+      </div>
+      <div class="swipe-hint">Swipe right to connect · left to skip</div>
+    </div>
+  </div>
+
+  <!-- ══ MATCHES ══ -->
+  <div id="page-matches" class="page">
+    <div class="page-title">Your Matches</div>
+    <div class="page-sub" id="matches-sub"></div>
+    <div id="matches-list"></div>
+  </div>
+
+  <!-- ══ CHAT HUB ══ -->
+  <div id="page-chat" class="page">
+    <div class="page-title">Chat</div>
+    <div class="page-sub">Study partners &amp; AI tutor</div>
+
+    <div class="tutor-card" id="open-tutor">
+      <div class="tutor-bg-icon">🎓</div>
+      <div class="tutor-label">AI POWERED</div>
+      <div class="tutor-title">Study Tutor 🎓</div>
+      <div class="tutor-desc">Ask anything · Explanations · Quizzes · Problem solving</div>
+      <div class="tutor-cta">Chat now →</div>
+    </div>
+
+    <div class="section-label">Study Partners</div>
+    <div id="chat-partners-list"></div>
+  </div>
+
+  <!-- ══ GROUPS ══ -->
+  <div id="page-groups" class="page">
+    <div class="page-title">Study Groups</div>
+    <div class="page-sub" id="groups-sub"></div>
+    <div id="groups-list"></div>
+  </div>
+
+  <!-- ══ REGISTER ══ -->
+  <div id="page-profile" class="page">
+    <div class="page-title">Join StudyBuddy</div>
+    <div class="page-sub">Create your profile to find study partners</div>
+
+    <div class="success-banner" id="reg-success">🎉 You're registered! Head to Discover to find partners.</div>
+
+    <label class="form-label">Full name</label>
+    <input class="form-input" id="f-name" placeholder="e.g. Aisha Rahman" type="text">
+
+    <div class="two-col">
+      <div>
+        <label class="form-label">Age</label>
+        <input class="form-input" id="f-age" type="number" min="15" max="50" value="18" style="margin-bottom:0">
+      </div>
+      <div>
+        <label class="form-label">Course</label>
+        <select class="form-input" id="f-course" style="margin-bottom:0"></select>
+      </div>
+    </div>
+
+    <label class="form-label" style="margin-top:14px">Subject</label>
+    <select class="form-input" id="f-subject"></select>
+
+    <label class="form-label">Study style</label>
+    <div class="btn-grid" id="style-btns"></div>
+
+    <label class="form-label">Available time</label>
+    <div class="btn-grid" id="time-btns"></div>
+
+    <label class="form-label">Study goal</label>
+    <textarea class="form-input" id="f-goal" rows="3" placeholder="What do you want to achieve?" style="resize:none;height:88px"></textarea>
+
+    <label class="form-label">Contact (email / Discord / Instagram)</label>
+    <input class="form-input" id="f-contact" placeholder="@username or email" type="text">
+
+    <button class="submit-btn" id="submit-btn" disabled>Fill in all fields to continue</button>
+  </div>
+
+  <!-- ══ BOTTOM NAV ══ -->
+  <nav id="bottom-nav">
+    <button class="nav-btn active" data-page="discover">
+      <span class="icon">🔍</span>
+      <span class="label">Discover</span>
+      <span class="dot"></span>
+    </button>
+    <button class="nav-btn" data-page="matches">
+      <span class="icon">💚</span>
+      <span class="label">Matches</span>
+      <span class="dot"></span>
+    </button>
+    <button class="nav-btn" data-page="chat">
+      <span class="icon">💬</span>
+      <span class="label">Chat</span>
+      <span class="nav-badge" id="chat-badge">0</span>
+      <span class="dot"></span>
+    </button>
+    <button class="nav-btn" data-page="groups">
+      <span class="icon">👥</span>
+      <span class="label">Groups</span>
+      <span class="dot"></span>
+    </button>
+    <button class="nav-btn" data-page="profile">
+      <span class="icon">👤</span>
+      <span class="label">Register</span>
+      <span class="dot"></span>
+    </button>
+  </nav>
+
+  <!-- ══ CHAT OVERLAY ══ -->
+  <div id="chat-view">
+    <div class="chat-header">
+      <button class="chat-back" id="chat-back">←</button>
+      <div id="chat-avatar" class="avatar-sm"></div>
+      <div>
+        <div class="chat-name" id="chat-name"></div>
+        <div class="chat-status" id="chat-status"></div>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-bar">
+      <input class="chat-input" id="chat-input" placeholder="Message..." type="text">
+      <button class="send-btn" id="chat-send" disabled>↑</button>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+// ── DATA ──
+const PALS = [
+  {bg:"#EEEDFE",t:"#534AB7"}, {bg:"#C8F5E4",t:"#1A9E75"},
+  {bg:"#FFE5D9",t:"#D85A30"}, {bg:"#E6F1FB",t:"#185FA5"},
+  {bg:"#FAEEDA",t:"#BA7517"}
+];
+const SCOLS = {
+  "Mathematics":{bg:"#EEEDFE",t:"#534AB7"},"Physics":{bg:"#E6F1FB",t:"#185FA5"},
+  "Chemistry":{bg:"#C8F5E4",t:"#1A9E75"},"Biology":{bg:"#C8F5E4",t:"#1A9E75"},
+  "Computer Science":{bg:"#EEEDFE",t:"#534AB7"},"English":{bg:"#FFE5D9",t:"#D85A30"},
+  "Business":{bg:"#FAEEDA",t:"#BA7517"},"Economics":{bg:"#FAEEDA",t:"#BA7517"},
+  "History":{bg:"#FFE5D9",t:"#D85A30"},"Other":{bg:"#F1EFE8",t:"#5F5E5A"}
+};
+const STYLES_LIST = ["Quiet Study","Discussion Based","Group Study","Online Study","Exam Practice"];
+const TIMES_LIST  = ["Morning","Afternoon","Evening","Night","Weekend"];
+const COURSES_LIST = ["Computer Science","Business","Engineering","Medicine","Multimedia","Accounting","Other"];
+const SUBS_LIST = ["Mathematics","Physics","Chemistry","Biology","Computer Science","English","Business","Economics","History","Other"];
+const SI = {"Quiet Study":"📖","Discussion Based":"💬","Group Study":"👥","Online Study":"💻","Exam Practice":"📝"};
+const TI = {"Morning":"🌅","Afternoon":"☀️","Evening":"🌇","Night":"🌙","Weekend":"🗓️"};
+const PARTNER_REPLIES = {
+  "AR":["Hey! Happy to study together 😊","I usually do past year papers — want to try?","What topics are you struggling with?","YouTube explanations really help for calculus!","Let's set a session this week?"],
+  "HZ":["Physics is tough but we can do it 💪","I prefer working through derivations step by step","Have you tried Feynman's lectures? They're 🔥","Let's do thermodynamics first","I'm free most nights after 9pm"],
+  "ML":["Economics makes sense when you link it to real news","I like discussing case studies!","Macro first or micro? 🤔","Have you read Freakonomics?","I can share my notes from last semester!"],
+  "DF":["Anatomy is 90% memorization honestly 😭","Spaced repetition with Anki works well","I do quiet study sessions 2-3 hours at a time","Let's start with the musculoskeletal system","I have good diagrams we can use"],
+  "PN":["DSA is all about patterns — once you see them it clicks","I'm doing LeetCode daily, want to join?","Let's start with arrays and hashmaps","I can explain time complexity if you're stuck","Pair programming sessions are super helpful!"]
+};
+
+let students = [
+  {id:1,name:"Aisha Rahman",age:20,course:"Computer Science",subject:"Mathematics",studyStyle:"Discussion Based",availableTime:"Evening",goal:"Ace my calculus finals and improve problem-solving speed.",contact:"@aisha.study",avatar:"AR"},
+  {id:2,name:"Haziq Zulkifli",age:21,course:"Engineering",subject:"Physics",studyStyle:"Exam Practice",availableTime:"Night",goal:"Build strong fundamentals for thermodynamics.",contact:"haziq@gmail.com",avatar:"HZ"},
+  {id:3,name:"Mei Ling Tan",age:19,course:"Business",subject:"Economics",studyStyle:"Group Study",availableTime:"Morning",goal:"Understand macro and microeconomics deeply.",contact:"@meiling_t",avatar:"ML"},
+  {id:4,name:"Danial Faris",age:22,course:"Medicine",subject:"Biology",studyStyle:"Quiet Study",availableTime:"Afternoon",goal:"Memorize anatomy efficiently before clinical year.",contact:"d.faris@student.edu",avatar:"DF"},
+  {id:5,name:"Priya Nair",age:20,course:"Computer Science",subject:"Computer Science",studyStyle:"Online Study",availableTime:"Weekend",goal:"Learn DSA and crack coding interviews together.",contact:"@priya.codes",avatar:"PN"}
+];
+let liked = [];
+let skipped = [];
+let formState = { studyStyle: STYLES_LIST[0], availableTime: TIMES_LIST[0] };
+let currentChatMode = null; // 'partner' | 'tutor'
+let currentPartner = null;
+let tutorMessages = [];
+let partnerMessages = {};
+
+function getPal(i){ return PALS[i % PALS.length]; }
+function getSub(s){ return SCOLS[s] || SCOLS["Other"]; }
+
+// ── HELPERS ──
+function el(tag, attrs={}, ...children){
+  const d = document.createElement(tag);
+  for(const [k,v] of Object.entries(attrs)){
+    if(k==="style" && typeof v==="object") Object.assign(d.style, v);
+    else if(k.startsWith("on")) d.addEventListener(k.slice(2).toLowerCase(), v);
+    else d.setAttribute(k, v);
+  }
+  children.forEach(c => { if(c) d.appendChild(typeof c==="string" ? document.createTextNode(c) : c); });
+  return d;
+}
+function makeAvatar(cls, text, palIndex){
+  const p = getPal(palIndex);
+  const d = el("div",{class:cls});
+  d.style.background = p.bg; d.style.color = p.t;
+  d.textContent = text;
+  return d;
+}
+function makePill(subject){
+  const sc = getSub(subject);
+  const d = el("div",{class:"pill"});
+  d.style.background = sc.bg; d.style.color = sc.t;
+  d.textContent = "📚 "+subject;
+  return d;
+}
+
+// ── NAV ──
+document.querySelectorAll(".nav-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const page = btn.dataset.page;
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById("page-"+page).classList.add("active");
+    if(page==="matches") renderMatches();
+    if(page==="groups")  renderGroups();
+    if(page==="chat")    renderChatHub();
+  });
+});
+function goPage(id){
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.page===id));
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id==="page-"+id));
+}
+
+// ── SWIPE ──
+let swipeIndex = 0;
+function getVisible(){ return students.filter(s => !liked.find(l=>l.id===s.id) && !skipped.includes(s.id)); }
+
+function renderSwipeStack(){
+  const stack = document.getElementById("swipe-stack");
+  const controls = document.getElementById("swipe-controls");
+  const empty = document.getElementById("swipe-empty");
+  stack.innerHTML = "";
+  const vis = getVisible();
+  if(!vis.length){
+    stack.style.display="none"; controls.style.display="none"; empty.style.display="block";
+    return;
+  }
+  stack.style.display=""; controls.style.display=""; empty.style.display="none";
+
+  // render up to 3, back-to-front
+  vis.slice(0,3).reverse().forEach((s,ri)=>{
+    const i = Math.min(2, vis.length-1) - ri; // 2,1,0
+    const palIdx = students.indexOf(s);
+    const card = buildSwipeCard(s, palIdx, i);
+    stack.appendChild(card);
+    if(i===0) initDrag(card, s);
+  });
+}
+
+function buildSwipeCard(s, palIdx, zLayer){
+  const card = el("div",{class:"swipe-card"+(zLayer===1?" behind-1":zLayer===2?" behind-2":"")});
+  const connect = el("div",{class:"swipe-label connect"},"CONNECT ✓");
+  const skip    = el("div",{class:"swipe-label skip"},"SKIP ✕");
+  card.appendChild(connect); card.appendChild(skip);
+  card._connectLabel = connect; card._skipLabel = skip;
+
+  const pal = getPal(palIdx);
+  const sc = getSub(s.subject);
+  const av = el("div",{class:"avatar"});
+  av.style.background=pal.bg; av.style.color=pal.t; av.textContent=s.avatar;
+
+  const header = el("div",{class:"sc-header"}, av,
+    el("div",{}, el("div",{class:"sc-name"},s.name), el("div",{class:"sc-meta"},s.age+" · "+s.course))
+  );
+
+  const pill = el("div",{class:"pill",style:{display:"inline-block",marginBottom:"16px"}});
+  pill.style.background=sc.bg; pill.style.color=sc.t; pill.textContent="📚 "+s.subject;
+
+  const tags = el("div",{class:"sc-tags"},
+    el("span",{class:"tag"},(SI[s.studyStyle]||"")+" "+s.studyStyle),
+    el("span",{class:"tag"},(TI[s.availableTime]||"")+" "+s.availableTime)
+  );
+  const goal = el("div",{class:"sc-goal"},
+    el("div",{class:"sc-goal-label"},"Study goal"),
+    el("div",{class:"sc-goal-text"},s.goal)
+  );
+
+  card.append(header, pill, tags, goal);
+  return card;
+}
+
+function initDrag(card, student){
+  let startX = null, drag = 0;
+  const move = (dx) => {
+    drag = dx;
+    const rot = dx * 0.07;
+    card.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
+    card.style.transition = "none";
+    card._connectLabel.classList.toggle("show", dx > 40);
+    card._skipLabel.classList.toggle("show", dx < -40);
+  };
+  const end = () => {
+    if(!startX) return;
+    startX = null;
+    if(drag > 80){ flyOut(card,"right",()=>doLike(student)); }
+    else if(drag < -80){ flyOut(card,"left",()=>doSkip(student)); }
+    else { card.style.transition="transform 0.35s ease"; card.style.transform=""; card._connectLabel.classList.remove("show"); card._skipLabel.classList.remove("show"); }
+    drag = 0;
+  };
+  card.addEventListener("mousedown", e => { startX=e.clientX; });
+  document.addEventListener("mousemove", e => { if(startX!==null) move(e.clientX-startX); });
+  document.addEventListener("mouseup", end);
+  card.addEventListener("touchstart", e => { startX=e.touches[0].clientX; }, {passive:true});
+  card.addEventListener("touchmove",  e => { if(startX!==null) move(e.touches[0].clientX-startX); }, {passive:true});
+  card.addEventListener("touchend", end);
+}
+
+function flyOut(card, dir, cb){
+  card.style.transition = "transform 0.3s ease, opacity 0.3s";
+  card.style.transform = `translateX(${dir==="right"?500:-500}px) rotate(${dir==="right"?15:-15}deg)`;
+  card.style.opacity = "0";
+  setTimeout(()=>{ cb(); renderSwipeStack(); updateBadge(); }, 300);
+}
+
+document.getElementById("btn-like").onclick = () => {
+  const vis = getVisible(); if(!vis.length) return;
+  const card = document.querySelector("#swipe-stack .swipe-card:not(.behind-1):not(.behind-2)");
+  if(card) flyOut(card,"right",()=>doLike(vis[0]));
+};
+document.getElementById("btn-skip").onclick = () => {
+  const vis = getVisible(); if(!vis.length) return;
+  const card = document.querySelector("#swipe-stack .swipe-card:not(.behind-1):not(.behind-2)");
+  if(card) flyOut(card,"left",()=>doSkip(vis[0]));
+};
+
+function doLike(s){ if(!liked.find(l=>l.id===s.id)) liked.push(s); }
+function doSkip(s){ if(!skipped.includes(s.id)) skipped.push(s.id); }
+function updateBadge(){
+  const b = document.getElementById("chat-badge");
+  b.textContent = liked.length;
+  b.classList.toggle("visible", liked.length>0);
+}
+
+// ── MATCHES ──
+function renderMatches(){
+  document.getElementById("matches-sub").textContent = liked.length+" study partner"+(liked.length!==1?"s":"")+" connected";
+  const list = document.getElementById("matches-list");
+  list.innerHTML = "";
+  if(!liked.length){
+    list.innerHTML=`<div class="empty"><div class="emoji">💚</div><div class="title">No matches yet</div><p>Swipe right on Discover to connect!</p></div>`;
+    return;
+  }
+  liked.forEach((s,i)=>{
+    const sc = getSub(s.subject);
+    const row = el("div",{class:"card match-row"});
+    const wrap = el("div",{style:{position:"relative"}});
+    const av = makeAvatar("avatar-sm", s.avatar, i);
+    const dot = el("div",{class:"online-dot"});
+    wrap.append(av,dot);
+    const info = el("div",{style:{flex:"1"}},
+      el("div",{style:{fontWeight:"800",fontSize:"15px",marginBottom:"3px"}},s.name),
+      el("div",{style:{display:"flex",gap:"6px",flexWrap:"wrap",alignItems:"center"}},
+        (() => { const p=el("span",{class:"pill",style:{fontSize:"12px",padding:"2px 8px"}}); p.style.background=sc.bg; p.style.color=sc.t; p.textContent=s.subject; return p; })(),
+        el("span",{style:{fontSize:"12px",color:"#999"}},(SI[s.studyStyle]||"")+" "+s.studyStyle)
+      )
+    );
+    const icon = el("div",{style:{fontSize:"22px",color:"var(--mint-d)"}},"💬");
+    row.append(wrap, info, icon);
+    row.addEventListener("click", () => openPartnerChat(s, i));
+    list.appendChild(row);
+  });
+}
+
+// ── GROUPS ──
+function renderGroups(){
+  const grouped = {};
+  students.forEach(s=>{ if(!grouped[s.subject]) grouped[s.subject]=[]; grouped[s.subject].push(s); });
+  document.getElementById("groups-sub").textContent = Object.keys(grouped).length+" active groups";
+  const list = document.getElementById("groups-list");
+  list.innerHTML = "";
+  Object.entries(grouped).forEach(([subj,members])=>{
+    const sc = getSub(subj);
+    const card = el("div",{class:"card"});
+    const top = el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"14px"}});
+    const p = el("span",{class:"pill"}); p.style.background=sc.bg; p.style.color=sc.t; p.textContent="📚 "+subj;
+    const cnt = el("span",{style:{fontSize:"12px",color:"#888",background:"#f5f5f0",borderRadius:"6px",padding:"3px 10px"}},members.length+" member"+(members.length!==1?"s":""));
+    top.append(p,cnt);
+    const stack = el("div",{class:"avatar-stack"});
+    members.slice(0,7).forEach((m,i)=>{ const a=makeAvatar("avatar-xs",m.avatar,i); a.title=m.name; stack.appendChild(a); });
+    if(members.length>7){ const more=el("div",{class:"avatar-xs",style:{background:"#f0f0eb",color:"#888",border:"2px solid #fff",marginLeft:"-9px"}},"+"+(members.length-7)); stack.appendChild(more); }
+    card.append(top,stack);
+    list.appendChild(card);
+  });
+}
+
+// ── CHAT HUB ──
+function renderChatHub(){
+  const list = document.getElementById("chat-partners-list");
+  list.innerHTML="";
+  if(!liked.length){
+    list.innerHTML=`<div class="card empty" style="padding:30px 20px"><div class="emoji" style="font-size:36px">👥</div><p style="color:#999;font-size:14px">No matches yet — swipe right to connect!</p></div>`;
+    return;
+  }
+  liked.forEach((s,i)=>{
+    const sc = getSub(s.subject);
+    const row = el("div",{class:"card match-row"});
+    const wrap = el("div",{style:{position:"relative"}});
+    const av = makeAvatar("avatar-sm",s.avatar,i);
+    const dot = el("div",{class:"online-dot"});
+    wrap.append(av,dot);
+    const info = el("div",{style:{flex:"1"}},
+      el("div",{style:{fontWeight:"800",fontSize:"15px",marginBottom:"3px"}},s.name),
+      (() => { const p=el("span",{class:"pill",style:{fontSize:"12px",padding:"2px 8px"}}); p.style.background=sc.bg; p.style.color=sc.t; p.textContent=s.subject; return p; })()
+    );
+    const arrow = el("div",{style:{fontSize:"12px",color:"#bbb"}},"Tap →");
+    row.append(wrap,info,arrow);
+    row.addEventListener("click",()=>openPartnerChat(s,i));
+    list.appendChild(row);
+  });
+}
+
+document.getElementById("open-tutor").addEventListener("click", openTutorChat);
+
+// ── PARTNER CHAT ──
+function openPartnerChat(partner, palIdx){
+  currentChatMode="partner"; currentPartner=partner;
+  if(!partnerMessages[partner.id]){
+    partnerMessages[partner.id]=[{role:"bot",text:`Hey! I'm ${partner.name} 👋 Ready to study ${partner.subject} together?`}];
+  }
+  const pal = getPal(palIdx);
+  const av = document.getElementById("chat-avatar");
+  av.style.background=pal.bg; av.style.color=pal.t; av.textContent=partner.avatar;
+  document.getElementById("chat-name").textContent=partner.name;
+  const status = document.getElementById("chat-status");
+  status.textContent="● Online · "+partner.subject; status.style.color="var(--mint-d)";
+  const sendBtn = document.getElementById("chat-send");
+  sendBtn.className="send-btn"; sendBtn.disabled=true;
+  document.getElementById("chat-input").placeholder="Message "+partner.name+"...";
+  renderChatMessages(partnerMessages[partner.id]);
+  document.getElementById("chat-view").classList.add("open");
+}
+
+// ── TUTOR CHAT ──
+function openTutorChat(){
+  currentChatMode="tutor"; currentPartner=null;
+  if(!tutorMessages.length){
+    tutorMessages=[{role:"bot",text:"Hi! I'm your AI Study Tutor 🎓 I can help you understand topics, solve problems, explain concepts, and quiz you. What are we studying today?"}];
+  }
+  const av = document.getElementById("chat-avatar");
+  av.style.background="var(--lav)"; av.style.color="var(--lav-d)"; av.textContent="🎓";
+  document.getElementById("chat-name").textContent="AI Study Tutor";
+  const status = document.getElementById("chat-status");
+  status.textContent="● Powered by Claude AI"; status.style.color="var(--lav-d)";
+  const sendBtn = document.getElementById("chat-send");
+  sendBtn.className="send-btn tutor"; sendBtn.disabled=true;
+  document.getElementById("chat-input").placeholder="Ask anything about your studies...";
+  renderChatMessages(tutorMessages, true);
+  document.getElementById("chat-view").classList.add("open");
+}
+
+document.getElementById("chat-back").addEventListener("click",()=>{
+  document.getElementById("chat-view").classList.remove("open");
+});
+
+// ── RENDER MESSAGES ──
+function renderChatMessages(msgs, isTutor=false){
+  const container = document.getElementById("chat-messages");
+  container.innerHTML="";
+
+  msgs.forEach(m => appendMessage(container, m, isTutor));
+
+  // prompt chips if tutor + only 1 msg
+  if(isTutor && msgs.length===1){
+    const hint = el("div",{style:{textAlign:"center",fontSize:"12px",color:"#aaa",marginBottom:"8px"}},"Try asking...");
+    const chips = el("div",{class:"prompt-chips"});
+    ["Explain integration by parts","How does natural selection work?","What is Big O notation?","Explain supply and demand","Help me with essay writing"].forEach(p=>{
+      const chip = el("button",{class:"prompt-chip"},p);
+      chip.addEventListener("click",()=>{ document.getElementById("chat-input").value=p; document.getElementById("chat-send").disabled=false; document.getElementById("chat-input").focus(); });
+      chips.appendChild(chip);
+    });
+    container.append(hint,chips);
+  }
+  container.scrollTop = container.scrollHeight;
+}
+
+function appendMessage(container, m, isTutor=false){
+  const row = el("div",{class:"msg-row "+(m.role==="user"?"user":"bot")});
+  if(m.role!=="user" && isTutor){
+    const av = el("div",{class:"tutor-avatar"},"🎓");
+    const bubble = el("div",{class:"msg-bubble tutor-bot"},m.text);
+    row.append(av,bubble);
+  } else {
+    const cls = m.role==="user" ? (isTutor?"msg-bubble tutor-user":"msg-bubble user") : "msg-bubble bot";
+    row.appendChild(el("div",{class:cls},m.text));
+  }
+  container.appendChild(row);
+}
+
+function showTyping(){
+  const container = document.getElementById("chat-messages");
+  const row = el("div",{class:"msg-row bot",id:"typing-row"});
+  const ind = el("div",{class:"typing-indicator"});
+  [0,1,2].forEach(i=>{ const d=el("div",{class:"typing-dot"}); const sc=currentChatMode==="tutor"?"var(--lav-d)":"#bbb"; d.style.background=sc; ind.appendChild(d); });
+  if(currentChatMode==="tutor"){
+    const av=el("div",{class:"tutor-avatar"},"🎓");
+    row.append(av,ind);
+  } else { row.appendChild(ind); }
+  container.appendChild(row);
+  container.scrollTop=container.scrollHeight;
+}
+function hideTyping(){ const t=document.getElementById("typing-row"); if(t) t.remove(); }
+
+// ── SEND ──
+const chatInput = document.getElementById("chat-input");
+const chatSend  = document.getElementById("chat-send");
+
+chatInput.addEventListener("input",()=>{ chatSend.disabled=!chatInput.value.trim(); });
+chatInput.addEventListener("keydown", e=>{ if(e.key==="Enter") chatSend.click(); });
+chatSend.addEventListener("click", async ()=>{
+  const txt = chatInput.value.trim(); if(!txt) return;
+  chatInput.value=""; chatSend.disabled=true;
+  const container = document.getElementById("chat-messages");
+
+  if(currentChatMode==="partner"){
+    partnerMessages[currentPartner.id].push({role:"user",text:txt});
+    appendMessage(container,{role:"user",text:txt},false);
+    container.scrollTop=container.scrollHeight;
+    showTyping();
+    const pool = PARTNER_REPLIES[currentPartner.avatar]||["Sounds great!","Let's do it!","That works 😊"];
+    const reply = pool[Math.floor(Math.random()*pool.length)];
+    setTimeout(()=>{
+      hideTyping();
+      partnerMessages[currentPartner.id].push({role:"bot",text:reply});
+      appendMessage(container,{role:"bot",text:reply},false);
+      container.scrollTop=container.scrollHeight;
+    }, 900+Math.random()*700);
+
+  } else {
+    tutorMessages.push({role:"user",text:txt});
+    appendMessage(container,{role:"user",text:txt},true);
+    container.scrollTop=container.scrollHeight;
+    showTyping(); chatSend.disabled=true;
+    try {
+      const history = tutorMessages.map(m=>({role:m.role==="bot"?"assistant":"user",content:m.text}));
+      const res = await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:1000,
+          system:"You are a friendly, encouraging AI study tutor for university students in Malaysia. Explain concepts clearly with relatable examples, give step-by-step solutions, and add study tips. Keep responses concise and conversational. Use occasional emojis to stay engaging.",
+          messages:history
+        })
+      });
+      const data = await res.json();
+      const reply = (data.content||[]).map(b=>b.text||"").join("") || "Sorry, I couldn't respond. Try again!";
+      hideTyping();
+      tutorMessages.push({role:"bot",text:reply});
+      appendMessage(container,{role:"bot",text:reply},true);
+    } catch(err){
+      hideTyping();
+      const errMsg = {role:"bot",text:"Oops! Something went wrong. Check your connection and try again 🙏"};
+      tutorMessages.push(errMsg);
+      appendMessage(container,errMsg,true);
+    }
+    container.scrollTop=container.scrollHeight;
+  }
+});
+
+// ── REGISTER FORM ──
+const courseSelect = document.getElementById("f-course");
+COURSES_LIST.forEach(c=>{ const o=document.createElement("option"); o.value=o.textContent=c; courseSelect.appendChild(o); });
+const subjectSelect = document.getElementById("f-subject");
+SUBS_LIST.forEach(s=>{ const o=document.createElement("option"); o.value=o.textContent=s; subjectSelect.appendChild(o); });
+
+// style buttons
+const styleBtns = document.getElementById("style-btns");
+STYLES_LIST.forEach(s=>{
+  const b=el("button",{class:"toggle-btn"+(s===formState.studyStyle?" active-mint":"")},SI[s]+" "+s);
+  b.dataset.value=s;
+  b.addEventListener("click",()=>{
+    formState.studyStyle=s;
+    styleBtns.querySelectorAll("button").forEach(x=>{ x.classList.toggle("active-mint",x.dataset.value===s); });
+  });
+  styleBtns.appendChild(b);
+});
+
+// time buttons
+const timeBtns = document.getElementById("time-btns");
+TIMES_LIST.forEach(t=>{
+  const b=el("button",{class:"toggle-btn"+(t===formState.availableTime?" active-lav":"")},TI[t]+" "+t);
+  b.dataset.value=t;
+  b.addEventListener("click",()=>{
+    formState.availableTime=t;
+    timeBtns.querySelectorAll("button").forEach(x=>{ x.classList.toggle("active-lav",x.dataset.value===t); });
+  });
+  timeBtns.appendChild(b);
+});
+
+// live validation
+function checkForm(){
+  const ok = document.getElementById("f-name").value.trim() &&
+              document.getElementById("f-goal").value.trim() &&
+              document.getElementById("f-contact").value.trim();
+  const btn = document.getElementById("submit-btn");
+  btn.disabled=!ok;
+  btn.textContent = ok ? "Create Profile ✨" : "Fill in all fields to continue";
+}
+["f-name","f-goal","f-contact"].forEach(id=>document.getElementById(id).addEventListener("input",checkForm));
+
+document.getElementById("submit-btn").addEventListener("click",()=>{
+  const name    = document.getElementById("f-name").value.trim();
+  const age     = parseInt(document.getElementById("f-age").value)||18;
+  const course  = document.getElementById("f-course").value;
+  const subject = document.getElementById("f-subject").value;
+  const goal    = document.getElementById("f-goal").value.trim();
+  const contact = document.getElementById("f-contact").value.trim();
+  const avatar  = name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();
+  const s = {id:Date.now(),name,age,course,subject,studyStyle:formState.studyStyle,availableTime:formState.availableTime,goal,contact,avatar};
+  students.unshift(s);
+  document.getElementById("f-name").value="";
+  document.getElementById("f-age").value="18";
+  document.getElementById("f-goal").value="";
+  document.getElementById("f-contact").value="";
+  checkForm();
+  const banner = document.getElementById("reg-success");
+  banner.style.display="block";
+  setTimeout(()=>banner.style.display="none",3000);
+  renderSwipeStack();
+});
+
+// ── INIT ──
+renderSwipeStack();
+</script>
+</body>
+</html>
