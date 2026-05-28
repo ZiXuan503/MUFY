@@ -23,6 +23,8 @@
     --lav: #EEEDFE;  --lav-d: #534AB7;
     --yel: #FAEEDA;  --yel-d: #BA7517;
     --sky: #E6F1FB;  --sky-d: #185FA5;
+    --gem-blue: #E8F0FE; --gem-blue-d: #1a73e8;
+    --gem-grad-1: #4285F4; --gem-grad-2: #EA4335; --gem-grad-3: #34A853; --gem-grad-4: #FBBC05;
     --bg: #F5F5F0;
     --card: #ffffff;
     --border: #e8e8e0;
@@ -207,8 +209,16 @@
   .msg-bubble.user { background: var(--mint-d); color: #fff; border-radius: 18px 18px 4px 18px; }
   .msg-bubble.bot  { background: #fff; color: #1a1a1a; border: 1px solid var(--border); border-radius: 18px 18px 18px 4px; }
   .msg-bubble.tutor-bot { background: #fff; color: #1a1a1a; border: 1px solid var(--border); border-radius: 18px 18px 18px 4px; white-space: pre-wrap; }
-  .msg-bubble.tutor-user { background: var(--lav-d); color: #fff; border-radius: 18px 18px 4px 18px; }
-  .tutor-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--lav); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .msg-bubble.tutor-user { background: var(--gem-blue-d); color: #fff; border-radius: 18px 18px 4px 18px; }
+
+  /* Gemini avatar with Google colours */
+  .tutor-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #4285F4 0%, #EA4335 35%, #FBBC05 65%, #34A853 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+
   @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
   .typing-indicator { display: flex; gap: 5px; align-items: center; padding: 12px 16px; background: #fff; border: 1px solid var(--border); border-radius: 18px 18px 18px 4px; width: fit-content; }
   .typing-dot { width: 7px; height: 7px; border-radius: 50%; animation: blink 1.2s infinite; }
@@ -228,7 +238,7 @@
     background: #f9f9f6; font-family: 'DM Sans', sans-serif;
     outline: none; transition: border-color 0.2s;
   }
-  .chat-input:focus { border-color: var(--mint-d); }
+  .chat-input:focus { border-color: var(--gem-blue-d); }
   .send-btn {
     width: 42px; height: 42px; border-radius: 50%;
     background: var(--mint-d); color: #fff; border: none;
@@ -237,14 +247,14 @@
     font-weight: 700; transition: background 0.2s;
   }
   .send-btn:disabled { background: #e8e8e0; color: #aaa; cursor: default; }
-  .send-btn.tutor { background: var(--lav-d); }
+  .send-btn.tutor { background: var(--gem-blue-d); }
   .send-btn.tutor:disabled { background: #e8e8e0; }
 
-  /* ── CHAT HUB ── */
+  /* ── CHAT HUB — Gemini card ── */
   .tutor-card {
     border-radius: 18px; padding: 20px; margin-bottom: 20px;
     cursor: pointer; position: relative; overflow: hidden;
-    background: linear-gradient(135deg, #534AB7, #7F77DD);
+    background: linear-gradient(135deg, #1a73e8, #34A853);
     transition: opacity 0.15s;
   }
   .tutor-card:hover { opacity: 0.92; }
@@ -256,12 +266,21 @@
   .section-label { font-size: 13px; font-weight: 700; color: #888; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px; }
   .online-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--mint-d); border: 2px solid #fff; position: absolute; bottom: 0; right: 0; }
 
+  /* Gemini icon in tutor card (coloured G) */
+  .gemini-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 900; color: #fff;
+    margin-bottom: 10px;
+  }
+
   /* ── PROMPT CHIPS ── */
   .prompt-chips { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; margin-top: 8px; }
   .prompt-chip {
     font-size: 12px; padding: 7px 12px; border-radius: 20px;
-    border: 1.5px solid var(--lav-d); background: var(--lav);
-    color: var(--lav-d); cursor: pointer; font-family: 'DM Sans', sans-serif;
+    border: 1.5px solid var(--gem-blue-d); background: var(--gem-blue);
+    color: var(--gem-blue-d); cursor: pointer; font-family: 'DM Sans', sans-serif;
     font-weight: 600;
   }
 
@@ -269,6 +288,26 @@
   .empty { text-align: center; padding: 60px 20px; color: #999; }
   .empty .emoji { font-size: 52px; margin-bottom: 12px; }
   .empty .title { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 8px; }
+
+  /* Gemini API key banner */
+  .api-key-banner {
+    background: var(--gem-blue); border: 1.5px solid var(--gem-blue-d);
+    border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;
+    font-size: 13px; color: #155EAC; display: none;
+  }
+  .api-key-banner.visible { display: block; }
+  .api-key-row { display: flex; gap: 8px; margin-top: 8px; }
+  .api-key-input {
+    flex: 1; font-size: 13px; padding: 8px 12px;
+    border-radius: 8px; border: 1.5px solid var(--gem-blue-d);
+    background: #fff; font-family: 'DM Sans', sans-serif; outline: none;
+  }
+  .api-key-save {
+    padding: 8px 14px; border-radius: 8px;
+    background: var(--gem-blue-d); color: #fff; border: none;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
 
   ::-webkit-scrollbar { width: 3px; }
   ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
@@ -282,9 +321,7 @@
     <div class="page-title">StudyBuddy</div>
     <div class="page-sub">Swipe to connect with study partners 📖</div>
 
-    <div id="swipe-stack">
-      <!-- cards injected by JS -->
-    </div>
+    <div id="swipe-stack"></div>
     <div id="swipe-empty" class="empty" style="display:none">
       <div class="emoji">🎉</div>
       <div class="title">You've seen everyone!</div>
@@ -313,9 +350,10 @@
     <div class="page-sub">Study partners &amp; AI tutor</div>
 
     <div class="tutor-card" id="open-tutor">
-      <div class="tutor-bg-icon">🎓</div>
-      <div class="tutor-label">AI POWERED</div>
-      <div class="tutor-title">Study Tutor 🎓</div>
+      <div class="tutor-bg-icon">✦</div>
+      <div class="gemini-icon">✦</div>
+      <div class="tutor-label">POWERED BY GOOGLE</div>
+      <div class="tutor-title">Gemini AI Study Tutor</div>
       <div class="tutor-desc">Ask anything · Explanations · Quizzes · Problem solving</div>
       <div class="tutor-cta">Chat now →</div>
     </div>
@@ -373,30 +411,20 @@
   <!-- ══ BOTTOM NAV ══ -->
   <nav id="bottom-nav">
     <button class="nav-btn active" data-page="discover">
-      <span class="icon">🔍</span>
-      <span class="label">Discover</span>
-      <span class="dot"></span>
+      <span class="icon">🔍</span><span class="label">Discover</span><span class="dot"></span>
     </button>
     <button class="nav-btn" data-page="matches">
-      <span class="icon">💚</span>
-      <span class="label">Matches</span>
-      <span class="dot"></span>
+      <span class="icon">💚</span><span class="label">Matches</span><span class="dot"></span>
     </button>
     <button class="nav-btn" data-page="chat">
-      <span class="icon">💬</span>
-      <span class="label">Chat</span>
-      <span class="nav-badge" id="chat-badge">0</span>
-      <span class="dot"></span>
+      <span class="icon">💬</span><span class="label">Chat</span>
+      <span class="nav-badge" id="chat-badge">0</span><span class="dot"></span>
     </button>
     <button class="nav-btn" data-page="groups">
-      <span class="icon">👥</span>
-      <span class="label">Groups</span>
-      <span class="dot"></span>
+      <span class="icon">👥</span><span class="label">Groups</span><span class="dot"></span>
     </button>
     <button class="nav-btn" data-page="profile">
-      <span class="icon">👤</span>
-      <span class="label">Register</span>
-      <span class="dot"></span>
+      <span class="icon">👤</span><span class="label">Register</span><span class="dot"></span>
     </button>
   </nav>
 
@@ -410,6 +438,17 @@
         <div class="chat-status" id="chat-status"></div>
       </div>
     </div>
+
+    <!-- Gemini API key banner (shown when key missing) -->
+    <div class="api-key-banner" id="api-key-banner">
+      🔑 Enter your <strong>Gemini API key</strong> to start chatting with the AI tutor.
+      Get one free at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--gem-blue-d);font-weight:700">aistudio.google.com</a>
+      <div class="api-key-row">
+        <input class="api-key-input" id="gemini-key-input" placeholder="AIza..." type="password">
+        <button class="api-key-save" id="gemini-key-save">Save</button>
+      </div>
+    </div>
+
     <div class="chat-messages" id="chat-messages"></div>
     <div class="chat-input-bar">
       <input class="chat-input" id="chat-input" placeholder="Message..." type="text">
@@ -422,8 +461,8 @@
 <script>
 // ── DATA ──
 const PALS = [
-  {bg:"#EEEDFE",t:"#534AB7"}, {bg:"#C8F5E4",t:"#1A9E75"},
-  {bg:"#FFE5D9",t:"#D85A30"}, {bg:"#E6F1FB",t:"#185FA5"},
+  {bg:"#EEEDFE",t:"#534AB7"},{bg:"#C8F5E4",t:"#1A9E75"},
+  {bg:"#FFE5D9",t:"#D85A30"},{bg:"#E6F1FB",t:"#185FA5"},
   {bg:"#FAEEDA",t:"#BA7517"}
 ];
 const SCOLS = {
@@ -454,13 +493,15 @@ let students = [
   {id:4,name:"Danial Faris",age:22,course:"Medicine",subject:"Biology",studyStyle:"Quiet Study",availableTime:"Afternoon",goal:"Memorize anatomy efficiently before clinical year.",contact:"d.faris@student.edu",avatar:"DF"},
   {id:5,name:"Priya Nair",age:20,course:"Computer Science",subject:"Computer Science",studyStyle:"Online Study",availableTime:"Weekend",goal:"Learn DSA and crack coding interviews together.",contact:"@priya.codes",avatar:"PN"}
 ];
-let liked = [];
-let skipped = [];
+let liked = [], skipped = [];
 let formState = { studyStyle: STYLES_LIST[0], availableTime: TIMES_LIST[0] };
-let currentChatMode = null; // 'partner' | 'tutor'
+let currentChatMode = null;
 let currentPartner = null;
 let tutorMessages = [];
 let partnerMessages = {};
+
+// Gemini API key management
+let geminiApiKey = localStorage.getItem("gemini_api_key") || "";
 
 function getPal(i){ return PALS[i % PALS.length]; }
 function getSub(s){ return SCOLS[s] || SCOLS["Other"]; }
@@ -473,21 +514,13 @@ function el(tag, attrs={}, ...children){
     else if(k.startsWith("on")) d.addEventListener(k.slice(2).toLowerCase(), v);
     else d.setAttribute(k, v);
   }
-  children.forEach(c => { if(c) d.appendChild(typeof c==="string" ? document.createTextNode(c) : c); });
+  children.forEach(c => { if(c!=null) d.appendChild(typeof c==="string" ? document.createTextNode(c) : c); });
   return d;
 }
 function makeAvatar(cls, text, palIndex){
   const p = getPal(palIndex);
   const d = el("div",{class:cls});
-  d.style.background = p.bg; d.style.color = p.t;
-  d.textContent = text;
-  return d;
-}
-function makePill(subject){
-  const sc = getSub(subject);
-  const d = el("div",{class:"pill"});
-  d.style.background = sc.bg; d.style.color = sc.t;
-  d.textContent = "📚 "+subject;
+  d.style.background=p.bg; d.style.color=p.t; d.textContent=text;
   return d;
 }
 
@@ -504,13 +537,8 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
     if(page==="chat")    renderChatHub();
   });
 });
-function goPage(id){
-  document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.page===id));
-  document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id==="page-"+id));
-}
 
 // ── SWIPE ──
-let swipeIndex = 0;
 function getVisible(){ return students.filter(s => !liked.find(l=>l.id===s.id) && !skipped.includes(s.id)); }
 
 function renderSwipeStack(){
@@ -520,14 +548,11 @@ function renderSwipeStack(){
   stack.innerHTML = "";
   const vis = getVisible();
   if(!vis.length){
-    stack.style.display="none"; controls.style.display="none"; empty.style.display="block";
-    return;
+    stack.style.display="none"; controls.style.display="none"; empty.style.display="block"; return;
   }
   stack.style.display=""; controls.style.display=""; empty.style.display="none";
-
-  // render up to 3, back-to-front
   vis.slice(0,3).reverse().forEach((s,ri)=>{
-    const i = Math.min(2, vis.length-1) - ri; // 2,1,0
+    const i = Math.min(2, vis.length-1) - ri;
     const palIdx = students.indexOf(s);
     const card = buildSwipeCard(s, palIdx, i);
     stack.appendChild(card);
@@ -538,9 +563,9 @@ function renderSwipeStack(){
 function buildSwipeCard(s, palIdx, zLayer){
   const card = el("div",{class:"swipe-card"+(zLayer===1?" behind-1":zLayer===2?" behind-2":"")});
   const connect = el("div",{class:"swipe-label connect"},"CONNECT ✓");
-  const skip    = el("div",{class:"swipe-label skip"},"SKIP ✕");
+  const skip = el("div",{class:"swipe-label skip"},"SKIP ✕");
   card.appendChild(connect); card.appendChild(skip);
-  card._connectLabel = connect; card._skipLabel = skip;
+  card._connectLabel=connect; card._skipLabel=skip;
 
   const pal = getPal(palIdx);
   const sc = getSub(s.subject);
@@ -550,10 +575,8 @@ function buildSwipeCard(s, palIdx, zLayer){
   const header = el("div",{class:"sc-header"}, av,
     el("div",{}, el("div",{class:"sc-name"},s.name), el("div",{class:"sc-meta"},s.age+" · "+s.course))
   );
-
   const pill = el("div",{class:"pill",style:{display:"inline-block",marginBottom:"16px"}});
   pill.style.background=sc.bg; pill.style.color=sc.t; pill.textContent="📚 "+s.subject;
-
   const tags = el("div",{class:"sc-tags"},
     el("span",{class:"tag"},(SI[s.studyStyle]||"")+" "+s.studyStyle),
     el("span",{class:"tag"},(TI[s.availableTime]||"")+" "+s.availableTime)
@@ -562,108 +585,85 @@ function buildSwipeCard(s, palIdx, zLayer){
     el("div",{class:"sc-goal-label"},"Study goal"),
     el("div",{class:"sc-goal-text"},s.goal)
   );
-
   card.append(header, pill, tags, goal);
   return card;
 }
 
 function initDrag(card, student){
-  let startX = null, drag = 0;
-  const move = (dx) => {
-    drag = dx;
-    const rot = dx * 0.07;
-    card.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
-    card.style.transition = "none";
-    card._connectLabel.classList.toggle("show", dx > 40);
-    card._skipLabel.classList.toggle("show", dx < -40);
-  };
-  const end = () => {
-    if(!startX) return;
-    startX = null;
-    if(drag > 80){ flyOut(card,"right",()=>doLike(student)); }
-    else if(drag < -80){ flyOut(card,"left",()=>doSkip(student)); }
-    else { card.style.transition="transform 0.35s ease"; card.style.transform=""; card._connectLabel.classList.remove("show"); card._skipLabel.classList.remove("show"); }
-    drag = 0;
-  };
-  card.addEventListener("mousedown", e => { startX=e.clientX; });
-  document.addEventListener("mousemove", e => { if(startX!==null) move(e.clientX-startX); });
-  document.addEventListener("mouseup", end);
-  card.addEventListener("touchstart", e => { startX=e.touches[0].clientX; }, {passive:true});
-  card.addEventListener("touchmove",  e => { if(startX!==null) move(e.touches[0].clientX-startX); }, {passive:true});
-  card.addEventListener("touchend", end);
+  let startX=null, drag=0;
+  const move=(dx)=>{ drag=dx; card.style.transform=`translateX(${dx}px) rotate(${dx*0.07}deg)`; card.style.transition="none"; card._connectLabel.classList.toggle("show",dx>40); card._skipLabel.classList.toggle("show",dx<-40); };
+  const end=()=>{ if(!startX) return; startX=null; if(drag>80) flyOut(card,"right",()=>doLike(student)); else if(drag<-80) flyOut(card,"left",()=>doSkip(student)); else { card.style.transition="transform 0.35s ease"; card.style.transform=""; card._connectLabel.classList.remove("show"); card._skipLabel.classList.remove("show"); } drag=0; };
+  card.addEventListener("mousedown",e=>{startX=e.clientX;});
+  document.addEventListener("mousemove",e=>{if(startX!==null)move(e.clientX-startX);});
+  document.addEventListener("mouseup",end);
+  card.addEventListener("touchstart",e=>{startX=e.touches[0].clientX;},{passive:true});
+  card.addEventListener("touchmove",e=>{if(startX!==null)move(e.touches[0].clientX-startX);},{passive:true});
+  card.addEventListener("touchend",end);
 }
 
-function flyOut(card, dir, cb){
-  card.style.transition = "transform 0.3s ease, opacity 0.3s";
-  card.style.transform = `translateX(${dir==="right"?500:-500}px) rotate(${dir==="right"?15:-15}deg)`;
-  card.style.opacity = "0";
-  setTimeout(()=>{ cb(); renderSwipeStack(); updateBadge(); }, 300);
+function flyOut(card,dir,cb){
+  card.style.transition="transform 0.3s ease, opacity 0.3s";
+  card.style.transform=`translateX(${dir==="right"?500:-500}px) rotate(${dir==="right"?15:-15}deg)`;
+  card.style.opacity="0";
+  setTimeout(()=>{cb();renderSwipeStack();updateBadge();},300);
 }
 
-document.getElementById("btn-like").onclick = () => {
-  const vis = getVisible(); if(!vis.length) return;
-  const card = document.querySelector("#swipe-stack .swipe-card:not(.behind-1):not(.behind-2)");
+document.getElementById("btn-like").onclick=()=>{
+  const vis=getVisible(); if(!vis.length) return;
+  const card=document.querySelector("#swipe-stack .swipe-card:not(.behind-1):not(.behind-2)");
   if(card) flyOut(card,"right",()=>doLike(vis[0]));
 };
-document.getElementById("btn-skip").onclick = () => {
-  const vis = getVisible(); if(!vis.length) return;
-  const card = document.querySelector("#swipe-stack .swipe-card:not(.behind-1):not(.behind-2)");
+document.getElementById("btn-skip").onclick=()=>{
+  const vis=getVisible(); if(!vis.length) return;
+  const card=document.querySelector("#swipe-stack .swipe-card:not(.behind-1):not(.behind-2)");
   if(card) flyOut(card,"left",()=>doSkip(vis[0]));
 };
 
 function doLike(s){ if(!liked.find(l=>l.id===s.id)) liked.push(s); }
 function doSkip(s){ if(!skipped.includes(s.id)) skipped.push(s.id); }
 function updateBadge(){
-  const b = document.getElementById("chat-badge");
-  b.textContent = liked.length;
-  b.classList.toggle("visible", liked.length>0);
+  const b=document.getElementById("chat-badge");
+  b.textContent=liked.length; b.classList.toggle("visible",liked.length>0);
 }
 
 // ── MATCHES ──
 function renderMatches(){
-  document.getElementById("matches-sub").textContent = liked.length+" study partner"+(liked.length!==1?"s":"")+" connected";
-  const list = document.getElementById("matches-list");
-  list.innerHTML = "";
-  if(!liked.length){
-    list.innerHTML=`<div class="empty"><div class="emoji">💚</div><div class="title">No matches yet</div><p>Swipe right on Discover to connect!</p></div>`;
-    return;
-  }
+  document.getElementById("matches-sub").textContent=liked.length+" study partner"+(liked.length!==1?"s":"")+" connected";
+  const list=document.getElementById("matches-list"); list.innerHTML="";
+  if(!liked.length){ list.innerHTML=`<div class="empty"><div class="emoji">💚</div><div class="title">No matches yet</div><p>Swipe right on Discover to connect!</p></div>`; return; }
   liked.forEach((s,i)=>{
-    const sc = getSub(s.subject);
-    const row = el("div",{class:"card match-row"});
-    const wrap = el("div",{style:{position:"relative"}});
-    const av = makeAvatar("avatar-sm", s.avatar, i);
-    const dot = el("div",{class:"online-dot"});
-    wrap.append(av,dot);
-    const info = el("div",{style:{flex:"1"}},
+    const sc=getSub(s.subject);
+    const row=el("div",{class:"card match-row"});
+    const wrap=el("div",{style:{position:"relative"}});
+    const av=makeAvatar("avatar-sm",s.avatar,i);
+    wrap.append(av,el("div",{class:"online-dot"}));
+    const info=el("div",{style:{flex:"1"}},
       el("div",{style:{fontWeight:"800",fontSize:"15px",marginBottom:"3px"}},s.name),
       el("div",{style:{display:"flex",gap:"6px",flexWrap:"wrap",alignItems:"center"}},
-        (() => { const p=el("span",{class:"pill",style:{fontSize:"12px",padding:"2px 8px"}}); p.style.background=sc.bg; p.style.color=sc.t; p.textContent=s.subject; return p; })(),
+        (()=>{const p=el("span",{class:"pill",style:{fontSize:"12px",padding:"2px 8px"}});p.style.background=sc.bg;p.style.color=sc.t;p.textContent=s.subject;return p;})(),
         el("span",{style:{fontSize:"12px",color:"#999"}},(SI[s.studyStyle]||"")+" "+s.studyStyle)
       )
     );
-    const icon = el("div",{style:{fontSize:"22px",color:"var(--mint-d)"}},"💬");
-    row.append(wrap, info, icon);
-    row.addEventListener("click", () => openPartnerChat(s, i));
+    row.append(wrap,info,el("div",{style:{fontSize:"22px",color:"var(--mint-d)"}},"💬"));
+    row.addEventListener("click",()=>openPartnerChat(s,i));
     list.appendChild(row);
   });
 }
 
 // ── GROUPS ──
 function renderGroups(){
-  const grouped = {};
+  const grouped={};
   students.forEach(s=>{ if(!grouped[s.subject]) grouped[s.subject]=[]; grouped[s.subject].push(s); });
-  document.getElementById("groups-sub").textContent = Object.keys(grouped).length+" active groups";
-  const list = document.getElementById("groups-list");
-  list.innerHTML = "";
+  document.getElementById("groups-sub").textContent=Object.keys(grouped).length+" active groups";
+  const list=document.getElementById("groups-list"); list.innerHTML="";
   Object.entries(grouped).forEach(([subj,members])=>{
-    const sc = getSub(subj);
-    const card = el("div",{class:"card"});
-    const top = el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"14px"}});
-    const p = el("span",{class:"pill"}); p.style.background=sc.bg; p.style.color=sc.t; p.textContent="📚 "+subj;
-    const cnt = el("span",{style:{fontSize:"12px",color:"#888",background:"#f5f5f0",borderRadius:"6px",padding:"3px 10px"}},members.length+" member"+(members.length!==1?"s":""));
+    const sc=getSub(subj);
+    const card=el("div",{class:"card"});
+    const top=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"14px"}});
+    const p=el("span",{class:"pill"});p.style.background=sc.bg;p.style.color=sc.t;p.textContent="📚 "+subj;
+    const cnt=el("span",{style:{fontSize:"12px",color:"#888",background:"#f5f5f0",borderRadius:"6px",padding:"3px 10px"}},members.length+" member"+(members.length!==1?"s":""));
     top.append(p,cnt);
-    const stack = el("div",{class:"avatar-stack"});
+    const stack=el("div",{class:"avatar-stack"});
     members.slice(0,7).forEach((m,i)=>{ const a=makeAvatar("avatar-xs",m.avatar,i); a.title=m.name; stack.appendChild(a); });
     if(members.length>7){ const more=el("div",{class:"avatar-xs",style:{background:"#f0f0eb",color:"#888",border:"2px solid #fff",marginLeft:"-9px"}},"+"+(members.length-7)); stack.appendChild(more); }
     card.append(top,stack);
@@ -673,31 +673,25 @@ function renderGroups(){
 
 // ── CHAT HUB ──
 function renderChatHub(){
-  const list = document.getElementById("chat-partners-list");
-  list.innerHTML="";
-  if(!liked.length){
-    list.innerHTML=`<div class="card empty" style="padding:30px 20px"><div class="emoji" style="font-size:36px">👥</div><p style="color:#999;font-size:14px">No matches yet — swipe right to connect!</p></div>`;
-    return;
-  }
+  const list=document.getElementById("chat-partners-list"); list.innerHTML="";
+  if(!liked.length){ list.innerHTML=`<div class="card empty" style="padding:30px 20px"><div class="emoji" style="font-size:36px">👥</div><p style="color:#999;font-size:14px">No matches yet — swipe right to connect!</p></div>`; return; }
   liked.forEach((s,i)=>{
-    const sc = getSub(s.subject);
-    const row = el("div",{class:"card match-row"});
-    const wrap = el("div",{style:{position:"relative"}});
-    const av = makeAvatar("avatar-sm",s.avatar,i);
-    const dot = el("div",{class:"online-dot"});
-    wrap.append(av,dot);
-    const info = el("div",{style:{flex:"1"}},
+    const sc=getSub(s.subject);
+    const row=el("div",{class:"card match-row"});
+    const wrap=el("div",{style:{position:"relative"}});
+    const av=makeAvatar("avatar-sm",s.avatar,i);
+    wrap.append(av,el("div",{class:"online-dot"}));
+    const info=el("div",{style:{flex:"1"}},
       el("div",{style:{fontWeight:"800",fontSize:"15px",marginBottom:"3px"}},s.name),
-      (() => { const p=el("span",{class:"pill",style:{fontSize:"12px",padding:"2px 8px"}}); p.style.background=sc.bg; p.style.color=sc.t; p.textContent=s.subject; return p; })()
+      (()=>{const p=el("span",{class:"pill",style:{fontSize:"12px",padding:"2px 8px"}});p.style.background=sc.bg;p.style.color=sc.t;p.textContent=s.subject;return p;})()
     );
-    const arrow = el("div",{style:{fontSize:"12px",color:"#bbb"}},"Tap →");
-    row.append(wrap,info,arrow);
+    row.append(wrap,info,el("div",{style:{fontSize:"12px",color:"#bbb"}},"Tap →"));
     row.addEventListener("click",()=>openPartnerChat(s,i));
     list.appendChild(row);
   });
 }
 
-document.getElementById("open-tutor").addEventListener("click", openTutorChat);
+document.getElementById("open-tutor").addEventListener("click",openTutorChat);
 
 // ── PARTNER CHAT ──
 function openPartnerChat(partner, palIdx){
@@ -705,139 +699,161 @@ function openPartnerChat(partner, palIdx){
   if(!partnerMessages[partner.id]){
     partnerMessages[partner.id]=[{role:"bot",text:`Hey! I'm ${partner.name} 👋 Ready to study ${partner.subject} together?`}];
   }
-  const pal = getPal(palIdx);
-  const av = document.getElementById("chat-avatar");
+  const pal=getPal(palIdx);
+  const av=document.getElementById("chat-avatar");
   av.style.background=pal.bg; av.style.color=pal.t; av.textContent=partner.avatar;
   document.getElementById("chat-name").textContent=partner.name;
-  const status = document.getElementById("chat-status");
+  const status=document.getElementById("chat-status");
   status.textContent="● Online · "+partner.subject; status.style.color="var(--mint-d)";
-  const sendBtn = document.getElementById("chat-send");
+  const sendBtn=document.getElementById("chat-send");
   sendBtn.className="send-btn"; sendBtn.disabled=true;
   document.getElementById("chat-input").placeholder="Message "+partner.name+"...";
-  renderChatMessages(partnerMessages[partner.id]);
+  document.getElementById("api-key-banner").classList.remove("visible");
+  renderChatMessages(partnerMessages[partner.id],false);
   document.getElementById("chat-view").classList.add("open");
 }
 
-// ── TUTOR CHAT ──
+// ── TUTOR CHAT (Gemini) ──
 function openTutorChat(){
   currentChatMode="tutor"; currentPartner=null;
   if(!tutorMessages.length){
-    tutorMessages=[{role:"bot",text:"Hi! I'm your AI Study Tutor 🎓 I can help you understand topics, solve problems, explain concepts, and quiz you. What are we studying today?"}];
+    tutorMessages=[{role:"bot",text:"Hi! I'm your AI Study Tutor ✦ Powered by Gemini. I can help you understand topics, solve problems, explain concepts, and quiz you. What are we studying today?"}];
   }
-  const av = document.getElementById("chat-avatar");
-  av.style.background="var(--lav)"; av.style.color="var(--lav-d)"; av.textContent="🎓";
+  // Gemini gradient avatar
+  const av=document.getElementById("chat-avatar");
+  av.style.background="linear-gradient(135deg,#4285F4,#EA4335,#FBBC05,#34A853)";
+  av.style.color="#fff"; av.textContent="✦";
   document.getElementById("chat-name").textContent="AI Study Tutor";
-  const status = document.getElementById("chat-status");
-  status.textContent="● Powered by Claude AI"; status.style.color="var(--lav-d)";
-  const sendBtn = document.getElementById("chat-send");
+  const status=document.getElementById("chat-status");
+  status.textContent="● Powered by Gemini AI"; status.style.color="var(--gem-blue-d)";
+  const sendBtn=document.getElementById("chat-send");
   sendBtn.className="send-btn tutor"; sendBtn.disabled=true;
   document.getElementById("chat-input").placeholder="Ask anything about your studies...";
-  renderChatMessages(tutorMessages, true);
+
+  // Show API key banner if key not set
+  const banner=document.getElementById("api-key-banner");
+  banner.classList.toggle("visible", !geminiApiKey);
+
+  renderChatMessages(tutorMessages,true);
   document.getElementById("chat-view").classList.add("open");
 }
+
+// API key save
+document.getElementById("gemini-key-save").addEventListener("click",()=>{
+  const val=document.getElementById("gemini-key-input").value.trim();
+  if(val){ geminiApiKey=val; localStorage.setItem("gemini_api_key",val); document.getElementById("api-key-banner").classList.remove("visible"); }
+});
 
 document.getElementById("chat-back").addEventListener("click",()=>{
   document.getElementById("chat-view").classList.remove("open");
 });
 
 // ── RENDER MESSAGES ──
-function renderChatMessages(msgs, isTutor=false){
-  const container = document.getElementById("chat-messages");
+function renderChatMessages(msgs,isTutor=false){
+  const container=document.getElementById("chat-messages");
   container.innerHTML="";
-
-  msgs.forEach(m => appendMessage(container, m, isTutor));
-
-  // prompt chips if tutor + only 1 msg
+  msgs.forEach(m=>appendMessage(container,m,isTutor));
   if(isTutor && msgs.length===1){
-    const hint = el("div",{style:{textAlign:"center",fontSize:"12px",color:"#aaa",marginBottom:"8px"}},"Try asking...");
-    const chips = el("div",{class:"prompt-chips"});
+    const hint=el("div",{style:{textAlign:"center",fontSize:"12px",color:"#aaa",marginBottom:"8px"}},"Try asking...");
+    const chips=el("div",{class:"prompt-chips"});
     ["Explain integration by parts","How does natural selection work?","What is Big O notation?","Explain supply and demand","Help me with essay writing"].forEach(p=>{
-      const chip = el("button",{class:"prompt-chip"},p);
+      const chip=el("button",{class:"prompt-chip"},p);
       chip.addEventListener("click",()=>{ document.getElementById("chat-input").value=p; document.getElementById("chat-send").disabled=false; document.getElementById("chat-input").focus(); });
       chips.appendChild(chip);
     });
     container.append(hint,chips);
   }
-  container.scrollTop = container.scrollHeight;
+  container.scrollTop=container.scrollHeight;
 }
 
-function appendMessage(container, m, isTutor=false){
-  const row = el("div",{class:"msg-row "+(m.role==="user"?"user":"bot")});
+function appendMessage(container,m,isTutor=false){
+  const row=el("div",{class:"msg-row "+(m.role==="user"?"user":"bot")});
   if(m.role!=="user" && isTutor){
-    const av = el("div",{class:"tutor-avatar"},"🎓");
-    const bubble = el("div",{class:"msg-bubble tutor-bot"},m.text);
+    const av=el("div",{class:"tutor-avatar"},"✦");
+    const bubble=el("div",{class:"msg-bubble tutor-bot"},m.text);
     row.append(av,bubble);
   } else {
-    const cls = m.role==="user" ? (isTutor?"msg-bubble tutor-user":"msg-bubble user") : "msg-bubble bot";
+    const cls=m.role==="user"?(isTutor?"msg-bubble tutor-user":"msg-bubble user"):"msg-bubble bot";
     row.appendChild(el("div",{class:cls},m.text));
   }
   container.appendChild(row);
 }
 
 function showTyping(){
-  const container = document.getElementById("chat-messages");
-  const row = el("div",{class:"msg-row bot",id:"typing-row"});
-  const ind = el("div",{class:"typing-indicator"});
-  [0,1,2].forEach(i=>{ const d=el("div",{class:"typing-dot"}); const sc=currentChatMode==="tutor"?"var(--lav-d)":"#bbb"; d.style.background=sc; ind.appendChild(d); });
-  if(currentChatMode==="tutor"){
-    const av=el("div",{class:"tutor-avatar"},"🎓");
-    row.append(av,ind);
-  } else { row.appendChild(ind); }
+  const container=document.getElementById("chat-messages");
+  const row=el("div",{class:"msg-row bot",id:"typing-row"});
+  const ind=el("div",{class:"typing-indicator"});
+  const dotColor=currentChatMode==="tutor"?"var(--gem-blue-d)":"#bbb";
+  [0,1,2].forEach(()=>{ const d=el("div",{class:"typing-dot"}); d.style.background=dotColor; ind.appendChild(d); });
+  if(currentChatMode==="tutor"){ const av=el("div",{class:"tutor-avatar"},"✦"); row.append(av,ind); }
+  else row.appendChild(ind);
   container.appendChild(row);
   container.scrollTop=container.scrollHeight;
 }
 function hideTyping(){ const t=document.getElementById("typing-row"); if(t) t.remove(); }
 
 // ── SEND ──
-const chatInput = document.getElementById("chat-input");
-const chatSend  = document.getElementById("chat-send");
-
+const chatInput=document.getElementById("chat-input");
+const chatSend=document.getElementById("chat-send");
 chatInput.addEventListener("input",()=>{ chatSend.disabled=!chatInput.value.trim(); });
-chatInput.addEventListener("keydown", e=>{ if(e.key==="Enter") chatSend.click(); });
-chatSend.addEventListener("click", async ()=>{
-  const txt = chatInput.value.trim(); if(!txt) return;
+chatInput.addEventListener("keydown",e=>{ if(e.key==="Enter") chatSend.click(); });
+
+chatSend.addEventListener("click",async()=>{
+  const txt=chatInput.value.trim(); if(!txt) return;
   chatInput.value=""; chatSend.disabled=true;
-  const container = document.getElementById("chat-messages");
+  const container=document.getElementById("chat-messages");
 
   if(currentChatMode==="partner"){
     partnerMessages[currentPartner.id].push({role:"user",text:txt});
     appendMessage(container,{role:"user",text:txt},false);
     container.scrollTop=container.scrollHeight;
     showTyping();
-    const pool = PARTNER_REPLIES[currentPartner.avatar]||["Sounds great!","Let's do it!","That works 😊"];
-    const reply = pool[Math.floor(Math.random()*pool.length)];
-    setTimeout(()=>{
-      hideTyping();
-      partnerMessages[currentPartner.id].push({role:"bot",text:reply});
-      appendMessage(container,{role:"bot",text:reply},false);
-      container.scrollTop=container.scrollHeight;
-    }, 900+Math.random()*700);
+    const pool=PARTNER_REPLIES[currentPartner.avatar]||["Sounds great!","Let's do it!","That works 😊"];
+    const reply=pool[Math.floor(Math.random()*pool.length)];
+    setTimeout(()=>{ hideTyping(); partnerMessages[currentPartner.id].push({role:"bot",text:reply}); appendMessage(container,{role:"bot",text:reply},false); container.scrollTop=container.scrollHeight; },900+Math.random()*700);
 
   } else {
+    // Gemini tutor
+    if(!geminiApiKey){
+      document.getElementById("api-key-banner").classList.add("visible");
+      chatInput.value=txt; chatSend.disabled=false; return;
+    }
     tutorMessages.push({role:"user",text:txt});
     appendMessage(container,{role:"user",text:txt},true);
     container.scrollTop=container.scrollHeight;
     showTyping(); chatSend.disabled=true;
+
     try {
-      const history = tutorMessages.map(m=>({role:m.role==="bot"?"assistant":"user",content:m.text}));
-      const res = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          model:"claude-sonnet-4-20250514",
-          max_tokens:1000,
-          system:"You are a friendly, encouraging AI study tutor for university students in Malaysia. Explain concepts clearly with relatable examples, give step-by-step solutions, and add study tips. Keep responses concise and conversational. Use occasional emojis to stay engaging.",
-          messages:history
-        })
-      });
-      const data = await res.json();
-      const reply = (data.content||[]).map(b=>b.text||"").join("") || "Sorry, I couldn't respond. Try again!";
+      // Build Gemini contents array
+      const contents=tutorMessages.map(m=>({
+        role: m.role==="bot"?"model":"user",
+        parts:[{text:m.text}]
+      }));
+
+      const res=await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+        {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({
+            system_instruction:{parts:[{text:"You are a friendly, encouraging AI study tutor for university students in Malaysia. Explain concepts clearly with relatable examples, give step-by-step solutions, and add study tips. Keep responses concise and conversational. Use occasional emojis to stay engaging."}]},
+            contents
+          })
+        }
+      );
+      const data=await res.json();
+      let reply="Sorry, I couldn't respond. Try again!";
+      if(data.candidates && data.candidates[0]?.content?.parts){
+        reply=data.candidates[0].content.parts.map(p=>p.text||"").join("");
+      } else if(data.error){
+        reply="⚠️ Gemini API error: "+data.error.message;
+      }
       hideTyping();
       tutorMessages.push({role:"bot",text:reply});
       appendMessage(container,{role:"bot",text:reply},true);
     } catch(err){
       hideTyping();
-      const errMsg = {role:"bot",text:"Oops! Something went wrong. Check your connection and try again 🙏"};
+      const errMsg={role:"bot",text:"Oops! Something went wrong. Check your API key and connection 🙏"};
       tutorMessages.push(errMsg);
       appendMessage(container,errMsg,true);
     }
@@ -846,62 +862,50 @@ chatSend.addEventListener("click", async ()=>{
 });
 
 // ── REGISTER FORM ──
-const courseSelect = document.getElementById("f-course");
+const courseSelect=document.getElementById("f-course");
 COURSES_LIST.forEach(c=>{ const o=document.createElement("option"); o.value=o.textContent=c; courseSelect.appendChild(o); });
-const subjectSelect = document.getElementById("f-subject");
+const subjectSelect=document.getElementById("f-subject");
 SUBS_LIST.forEach(s=>{ const o=document.createElement("option"); o.value=o.textContent=s; subjectSelect.appendChild(o); });
 
-// style buttons
-const styleBtns = document.getElementById("style-btns");
+const styleBtns=document.getElementById("style-btns");
 STYLES_LIST.forEach(s=>{
   const b=el("button",{class:"toggle-btn"+(s===formState.studyStyle?" active-mint":"")},SI[s]+" "+s);
   b.dataset.value=s;
-  b.addEventListener("click",()=>{
-    formState.studyStyle=s;
-    styleBtns.querySelectorAll("button").forEach(x=>{ x.classList.toggle("active-mint",x.dataset.value===s); });
-  });
+  b.addEventListener("click",()=>{ formState.studyStyle=s; styleBtns.querySelectorAll("button").forEach(x=>x.classList.toggle("active-mint",x.dataset.value===s)); });
   styleBtns.appendChild(b);
 });
 
-// time buttons
-const timeBtns = document.getElementById("time-btns");
+const timeBtns=document.getElementById("time-btns");
 TIMES_LIST.forEach(t=>{
   const b=el("button",{class:"toggle-btn"+(t===formState.availableTime?" active-lav":"")},TI[t]+" "+t);
   b.dataset.value=t;
-  b.addEventListener("click",()=>{
-    formState.availableTime=t;
-    timeBtns.querySelectorAll("button").forEach(x=>{ x.classList.toggle("active-lav",x.dataset.value===t); });
-  });
+  b.addEventListener("click",()=>{ formState.availableTime=t; timeBtns.querySelectorAll("button").forEach(x=>x.classList.toggle("active-lav",x.dataset.value===t)); });
   timeBtns.appendChild(b);
 });
 
-// live validation
 function checkForm(){
-  const ok = document.getElementById("f-name").value.trim() &&
-              document.getElementById("f-goal").value.trim() &&
-              document.getElementById("f-contact").value.trim();
-  const btn = document.getElementById("submit-btn");
-  btn.disabled=!ok;
-  btn.textContent = ok ? "Create Profile ✨" : "Fill in all fields to continue";
+  const ok=document.getElementById("f-name").value.trim()&&document.getElementById("f-goal").value.trim()&&document.getElementById("f-contact").value.trim();
+  const btn=document.getElementById("submit-btn");
+  btn.disabled=!ok; btn.textContent=ok?"Create Profile ✨":"Fill in all fields to continue";
 }
 ["f-name","f-goal","f-contact"].forEach(id=>document.getElementById(id).addEventListener("input",checkForm));
 
 document.getElementById("submit-btn").addEventListener("click",()=>{
-  const name    = document.getElementById("f-name").value.trim();
-  const age     = parseInt(document.getElementById("f-age").value)||18;
-  const course  = document.getElementById("f-course").value;
-  const subject = document.getElementById("f-subject").value;
-  const goal    = document.getElementById("f-goal").value.trim();
-  const contact = document.getElementById("f-contact").value.trim();
-  const avatar  = name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();
-  const s = {id:Date.now(),name,age,course,subject,studyStyle:formState.studyStyle,availableTime:formState.availableTime,goal,contact,avatar};
+  const name=document.getElementById("f-name").value.trim();
+  const age=parseInt(document.getElementById("f-age").value)||18;
+  const course=document.getElementById("f-course").value;
+  const subject=document.getElementById("f-subject").value;
+  const goal=document.getElementById("f-goal").value.trim();
+  const contact=document.getElementById("f-contact").value.trim();
+  const avatar=name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();
+  const s={id:Date.now(),name,age,course,subject,studyStyle:formState.studyStyle,availableTime:formState.availableTime,goal,contact,avatar};
   students.unshift(s);
   document.getElementById("f-name").value="";
   document.getElementById("f-age").value="18";
   document.getElementById("f-goal").value="";
   document.getElementById("f-contact").value="";
   checkForm();
-  const banner = document.getElementById("reg-success");
+  const banner=document.getElementById("reg-success");
   banner.style.display="block";
   setTimeout(()=>banner.style.display="none",3000);
   renderSwipeStack();
