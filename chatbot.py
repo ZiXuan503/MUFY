@@ -10,7 +10,7 @@ from datetime import time
 # =========================
 
 client = genai.Client(
-    api_key="YOUR_GEMINI_API_KEY"
+    api_key=st.secrets["YOUR_GEMINI_API_KEY"]
 )
 
 # =========================
